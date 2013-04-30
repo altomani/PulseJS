@@ -67,35 +67,16 @@ $(window).load(function() {
 
     function findPulse() {
 
-        var signal = [];
-        var meanR=0.0, meanG=0.0, stderrR=0.0, stderrG=0.0;
+        var signal = utils.PCA([r, g])[2];
 
-        for (var i=0; i<num_frames; i++) {
-            meanR += red[i];
-            meanG += green[i];
-            stderrR += red[i]*red[i];
-            stderrG += green[i]*green[i];
-        }
-        meanR /= num_frames;
-        meanG /= num_frames;
-        stderrR = Math.sqrt(stderrR/num_frames - meanR*meanR);
-        stderrG = Math.sqrt(stderrG/num_frames - meanG*meanG);
-
-        for (i=0;i<num_frames;i++) {
-            red[i] = (red[i]-meanR)/stderrR;
-            green[i] = (green[i] - meanG)/stderrG;
-            signal[i] = red[i]+green[i];
-        }
-
-        var fft = new FFT(num_frames,60);
-        fft.forward(signal);
+        var spectrum = utils.fft(signal);
 
         var pulse=0, max=0;
         for (i=0; i<num_frames;i++) {
-            var frequency=fft.getBandFrequency(i);
+            var frequency=(60.0/num_frames)*(i+1.5);
             if (frequency>0.5 && frequency<3) {
-                if (fft.spectrum[i]>max) {
-                    max=fft.spectrum[i];
+                if (spectrum[i]>max) {
+                    max=spectrum[i];
                     pulse=Math.round(frequency*60);
                 }
             }
