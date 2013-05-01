@@ -33,6 +33,11 @@ utils.stdErr = function (arr) {
 	return Math.sqrt(utils.variance(arr));
 }
 
+utils.normalize =function (arr) {
+	var s = utils.stdErr(arr)
+	return utils.center(arr).map( function (x) { return x / s } );
+}
+
 utils.covarAM = function (arr, mat) {
 	return mat.map( function (x) {
 		return covariance(arr, x);
@@ -48,8 +53,7 @@ utils.covMatrix = function (mat) {
 utils.SVD = numeric.svd;
 
 utils.PCA = function (mat) {
-	var m1 = mat.map(utils.center);
-	return utils.dot(utils.SVD(numeric.transpose(m1)).V, m1);
+	return utils.dot(utils.SVD(numeric.transpose(mat)).V, mat);
 }
 
 utils.spectrum = function (arr) {

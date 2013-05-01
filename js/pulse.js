@@ -45,7 +45,7 @@ function start() {
         if (frame < 30) {
             compatibility.requestAnimationFrame(tick);
             ++frame
-        } else if (frame < num_frames + 30) {
+        } else if (frame < num_frames + 30 + 1) {
             var f = frame - 30;
             compatibility.requestAnimationFrame(tick);
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -65,7 +65,7 @@ function start() {
 
                 ++frame;
             }
-        } else if (frame === num_frames+30) {
+        } else if (frame === num_frames + 30 + 1) {
             video.pause();
             video.src=null;
             findPulse(); 
@@ -74,7 +74,20 @@ function start() {
 
     function findPulse() {
 
-        var signals = utils.PCA([red, green]);
+
+        // Gaussian blur
+        var r = [], g = [], b = [];
+        for (i = 0; i < num_frames; i += 2) {
+            r[i/4] = red[i] + 3*red[i+1]  + 3*red[i+2] + red[i+3];
+            g[i/4] = green[i] + 3*green[i+1]  + 3*green[i+2] + green[i+3];
+            b[i/4] = blue[i] + 3*blue[i+1]  + 3*blue[i+2] + blue[i+3];
+        };
+
+        r = utils.normalize(r);
+        g = utils.normalize(g);
+        b = utils.normalize(b);
+
+        var signals = utils.PCA([r, g]);
         var spectrum = utils.spectrum(signals[1]);
 
         var pulse=0, max=0, i;
@@ -93,11 +106,11 @@ function start() {
         $('#result').show();
 
 
-        $.plot("#chart1", [red, green, blue].map(utils.addIndex) );
+        $.plot("#chart1", [r, g, b].map(utils.addIndex) );
 
         $.plot("#chart2", signals.map(utils.addIndex) );
 
-        $.plot("#chart3", [utils.addIndex(spectrum.slice(3,100))] );
+        $.plot("#chart3", [ utils.addIndex(spectrum.slice(0,64)) ]);
 
 
 
