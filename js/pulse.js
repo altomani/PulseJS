@@ -30,7 +30,7 @@ $(window).load(function() {
 
 
     var ctx, canvasWidth, canvasHeight,
-        red = [], green = [];
+        red = [], green = [], blue = [];
 
     var num_frames = 512;
 
@@ -43,37 +43,43 @@ $(window).load(function() {
     }
 
     function tick() {
-        if (frame < num_frames) {
+        if (frame < 30) {
+            compatibility.requestAnimationFrame(tick);
+            ++frame
+        } else if (frame < num_frames + 30) {
+            var f = frame - 30;
             compatibility.requestAnimationFrame(tick);
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
 
                 ctx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
                 var data = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data;
 
-                var redsum = 0, greensum = 0;
-                for (var index = 0; index < canvasHeight * canvasWidth * 4; index+=4) {
+                var redsum = 0, greensum = 0, bluesum = 0, canvasSize = canvasHeight * canvasWidth * 4;
+                for (var index = 0; index < canvasSize; index+=4) {
                     redsum += data[index];
                     greensum += data[index+1];
+                    bluesum += data[index+2];
                 }
-                red[frame] = redsum;
-                green[frame] = greensum;
+                red[f] = redsum;
+                green[f] = greensum;
+                blue[f] = bluesum;
 
                 ++frame;
             }
-        } else if (frame === num_frames) {
+        } else if (frame === num_frames+30) {
             findPulse(); 
         }
     }
 
     function findPulse() {
 
-        var signal = utils.PCA([r, g])[2];
+        var signals = utils.PCA([red, green, blue]);
+        var spectrum = utils.spectrum(signals[1]);
 
-        var spectrum = utils.fft(signal);
+        var pulse=0, max=0, i;
 
-        var pulse=0, max=0;
         for (i=0; i<num_frames;i++) {
-            var frequency=(60.0/num_frames)*(i+1.5);
+            var frequency=(60.0/num_frames)*(i+0.5);
             if (frequency>0.5 && frequency<3) {
                 if (spectrum[i]>max) {
                     max=spectrum[i];
@@ -84,6 +90,15 @@ $(window).load(function() {
 
         $('#pulse').html(pulse);
         $('#result').show();
+
+        $.plot("#chart1", [red, green, blue].map(utils.addIndex) );
+
+        $.plot("#chart2", [signals[1]].map(utils.addIndex) );
+
+        $.plot("#chart3", [utils.addIndex(spectrum.slice(3,100))] );
+
+
+
     }
 
 
