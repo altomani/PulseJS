@@ -1,5 +1,4 @@
-$(window).load(function() {
-    "use strict";
+function start() {
 
     var video = document.getElementById('webcam'),
         canvas = document.getElementById('canvas');
@@ -67,13 +66,15 @@ $(window).load(function() {
                 ++frame;
             }
         } else if (frame === num_frames+30) {
+            video.pause();
+            video.src=null;
             findPulse(); 
         }
     }
 
     function findPulse() {
 
-        var signals = utils.PCA([red, green, blue]);
+        var signals = utils.PCA([red, green]);
         var spectrum = utils.spectrum(signals[1]);
 
         var pulse=0, max=0, i;
@@ -91,9 +92,10 @@ $(window).load(function() {
         $('#pulse').html(pulse);
         $('#result').show();
 
+
         $.plot("#chart1", [red, green, blue].map(utils.addIndex) );
 
-        $.plot("#chart2", [signals[1]].map(utils.addIndex) );
+        $.plot("#chart2", signals.map(utils.addIndex) );
 
         $.plot("#chart3", [utils.addIndex(spectrum.slice(3,100))] );
 
@@ -102,8 +104,5 @@ $(window).load(function() {
     }
 
 
-    $(window).unload(function() {
-        video.pause();
-        video.src=null;
-    });
-});
+    
+}

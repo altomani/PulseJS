@@ -48,8 +48,8 @@ utils.covMatrix = function (mat) {
 utils.SVD = numeric.svd;
 
 utils.PCA = function (mat) {
-	var m1 = numeric.transpose(mat.map(utils.center));
-	return utils.dot(utils.SVD(m1).V, mat);
+	var m1 = mat.map(utils.center);
+	return utils.dot(utils.SVD(numeric.transpose(m1)).V, m1);
 }
 
 utils.spectrum = function (arr) {
