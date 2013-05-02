@@ -45,7 +45,7 @@ function start() {
         if (frame < 30) {
             compatibility.requestAnimationFrame(tick);
             ++frame
-        } else if (frame < num_frames + 30 + 1) {
+        } else if (frame < num_frames + 30 + 3) {
             var f = frame - 30;
             compatibility.requestAnimationFrame(tick);
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -65,7 +65,7 @@ function start() {
 
                 ++frame;
             }
-        } else if (frame === num_frames + 30 + 1) {
+        } else if (frame === num_frames + 30 + 3) {
             video.pause();
             video.src=null;
             findPulse(); 
@@ -78,25 +78,25 @@ function start() {
         // Gaussian blur
         var r = [], g = [], b = [];
         for (i = 0; i < num_frames; i += 2) {
-            r[i/4] = red[i] + 3*red[i+1]  + 3*red[i+2] + red[i+3];
-            g[i/4] = green[i] + 3*green[i+1]  + 3*green[i+2] + green[i+3];
-            b[i/4] = blue[i] + 3*blue[i+1]  + 3*blue[i+2] + blue[i+3];
+            r[i/2]=(red[i] + 3*red[i+1]  + 3*red[i+2] + red[i+3]);
+            g[i/2]=(green[i] + 3*green[i+1]  + 3*green[i+2] + green[i+3]);
+            b[i/2]=(blue[i] + 3*blue[i+1]  + 3*blue[i+2] + blue[i+3]);
         };
 
-        r = utils.normalize(r);
-        g = utils.normalize(g);
-        b = utils.normalize(b);
+        r = utils.normalize(utils.delinearize(r));
+        g = utils.normalize(utils.delinearize(g));
+        b = utils.normalize(utils.delinearize(b));
 
         var signals = utils.PCA([r, g]);
-        var spectrum = utils.spectrum(signals[1]);
+        var spectrum = signals.map(utils.spectrum);
 
         var pulse=0, max=0, i;
 
         for (i=0; i<num_frames;i++) {
             var frequency=(60.0/num_frames)*(i+0.5);
             if (frequency>0.5 && frequency<3) {
-                if (spectrum[i]>max) {
-                    max=spectrum[i];
+                if (spectrum[1][i]>max) {
+                    max=spectrum[1][i];
                     pulse=Math.round(frequency*60);
                 }
             }
@@ -110,7 +110,7 @@ function start() {
 
         $.plot("#chart2", signals.map(utils.addIndex) );
 
-        $.plot("#chart3", [ utils.addIndex(spectrum.slice(0,64)) ]);
+        $.plot("#chart3", spectrum.map(utils.addIndex) );
 
 
 

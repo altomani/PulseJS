@@ -1,6 +1,6 @@
 # Pulse JS
 
-Use a webcam to measure heart rate. See demo at <http://pulsejs.github.io>
+Use a webcam to measure heart rate. See demo at <http://altomani.github.io/PulseJS>
 
 ## TODO
 

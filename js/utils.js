@@ -1,7 +1,8 @@
 var utils = (function utils() {});
 
 utils.sum = function (arr) {
-	return arr.reduce( function(a, b) { return a + b; } );
+	var s = arr.reduce( function(a, b) { return a + b; } );
+	return s;
 }
 
 utils.mean = function (arr) {
@@ -34,8 +35,8 @@ utils.stdErr = function (arr) {
 }
 
 utils.normalize =function (arr) {
-	var s = utils.stdErr(arr)
-	return utils.center(arr).map( function (x) { return x / s } );
+	var s = utils.stdErr(arr);
+	return utils.center(arr).map( function (x) { return (x / s) } );
 }
 
 utils.covarAM = function (arr, mat) {
@@ -53,7 +54,7 @@ utils.covMatrix = function (mat) {
 utils.SVD = numeric.svd;
 
 utils.PCA = function (mat) {
-	return utils.dot(utils.SVD(numeric.transpose(mat)).V, mat);
+	return numeric.transpose(utils.SVD(numeric.transpose(mat)).U);
 }
 
 utils.spectrum = function (arr) {
@@ -68,4 +69,19 @@ utils.max = function (arr) {
 
 utils.addIndex = function (arr) {
 	return arr.map(function (x, i) { return [i,x]; });
+}
+
+utils.range = function (n) {
+	var i, a = [];
+	for (i = 0; i < n; i++) {
+		a.push(i);
+	}
+	return a;
+}
+
+utils.delinearize = function (arr) {
+	var l=arr.length, r=utils.range(l), 
+	 	beta = utils.covariance(arr, r)/utils.variance(r),
+	 	alpha = utils.mean(arr) - beta * utils.mean(r);
+	return arr.map(function(x, i) { return x-alpha-beta*i})
 }
